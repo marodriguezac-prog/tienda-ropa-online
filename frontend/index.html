@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tienda de Ropa</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Mi Tienda de Ropa</h1>
+    <nav>
+      <span id="usuario-info"></span>
+      <a href="login.html" id="link-login">Iniciar sesion</a>
+      <a href="registro.html" id="link-registro">Registrarse</a>
+      <a href="#" id="link-logout" style="display:none;">Cerrar sesion</a>
+      <a href="carrito.html">Carrito (<span id="contador-carrito">0</span>)</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Catalogo</h2>
+    <div id="catalogo" class="grid-productos"></div>
+  </main>
+
+  <footer>
+    <p>Proyecto de Ingenieria del Software - Tienda de Ropa</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

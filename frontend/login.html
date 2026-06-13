@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iniciar Sesion</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Mi Tienda de Ropa</h1>
+    <nav>
+      <a href="index.html">Catalogo</a>
+    </nav>
+  </header>
+
+  <div class="form-container">
+    <h2>Iniciar Sesion</h2>
+    <div id="mensaje"></div>
+    <input type="email" id="email" placeholder="Correo electronico" required>
+    <input type="password" id="password" placeholder="Contraseña" required>
+    <button onclick="iniciarSesion()">Iniciar Sesion</button>
+    <p>¿No tienes cuenta? <a href="registro.html">Registrate aqui</a></p>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

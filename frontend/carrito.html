@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carrito</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Mi Tienda de Ropa</h1>
+    <nav>
+      <span id="usuario-info"></span>
+      <a href="login.html" id="link-login">Iniciar sesion</a>
+      <a href="registro.html" id="link-registro">Registrarse</a>
+      <a href="#" id="link-logout" style="display:none;">Cerrar sesion</a>
+      <a href="index.html">Volver al catalogo</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Carrito de Compras</h2>
+    <div id="carrito-items"></div>
+    <div id="carrito-vacio" style="display:none;">
+      <p>Tu carrito esta vacio.</p>
+    </div>
+    <div class="carrito-total" id="carrito-total" style="display:none;">
+      <h3>Total: $<span id="total-monto">0</span></h3>
+      <button class="btn-comprar" onclick="confirmarCompra()">Confirmar Compra</button>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
