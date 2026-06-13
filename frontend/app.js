@@ -452,6 +452,7 @@ function cargarFactura() {
 async function generarReporte() {
   const resumen = document.getElementById('resumen-reporte');
   const tbody = document.getElementById('productos-vendidos-body');
+  const historialBody = document.getElementById('historial-body');
   if (!resumen) return;
 
   const desde = document.getElementById('fecha-desde').value;
@@ -467,6 +468,7 @@ async function generarReporte() {
     const res = await fetch(url);
     const data = await res.json();
 
+    // Resumen
     resumen.innerHTML = `
       <div class="resumen-card">
         <h4>Total Recaudado</h4>
@@ -478,6 +480,7 @@ async function generarReporte() {
       </div>
     `;
 
+    // Productos mas vendidos
     tbody.innerHTML = '';
     if (data.productosMasVendidos.length === 0) {
       tbody.innerHTML = '<tr><td colspan="3">No hay ventas en este periodo.</td></tr>';
@@ -493,8 +496,149 @@ async function generarReporte() {
       });
     }
 
+    // Historial de ventas
+    historialBody.innerHTML = '';
+    if (data.pedidos.length === 0) {
+      historialBody.innerHTML = '<tr><td colspan="6">No hay ventas en este periodo.</td></tr>';
+    } else {
+      data.pedidos.forEach(pedido => {
+        const fecha = new Date(pedido.createdAt).toLocaleString();
+        const cliente = pedido.usuario && pedido.usuario.nombre ? pedido.usuario.nombre : 'Cliente no disponible';
+        const email = pedido.usuario && pedido.usuario.email ? pedido.usuario.email : 'N/A';
+        const productos = pedido.productos
+          .map(item => `${item.producto ? item.producto.nombre : 'N/A'} x${item.cantidad}`)
+          .join(', ');
+
+        const fila = document.createElement('tr');
+        fila.innerHTML = `
+          <td>${fecha}</td>
+          <td>${cliente}</td>
+          <td>${email}</td>
+          <td>${productos}</td>
+          <td>$${pedido.total.toLocaleString()}</td>
+          <td>${pedido.estado}</td>
+        `;
+        historialBody.appendChild(fila);
+      });
+    }
+
   } catch (error) {
     resumen.innerHTML = '<p>Error al cargar el reporte.</p>';
     console.error(error);
+  }
+}  // ─── SUPER ADMIN ─────────────────────────────────────
+
+function mostrarSeccion(id, btn) {
+  document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activa'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('activo'));
+  document.getElementById(`seccion-${id}`).classList.add('activa');
+  btn.classList.add('activo');
+}
+
+// Cargar historial de pedidos con cambio de estado
+async function cargarPedidosAdmin() {
+  const tbody = document.getElementById('historial-pedidos');
+  if (!tbody) return;
+
+  try {
+    const res = await fetch(`${API_URL}/reportes/ventas`);
+    const data = await res.json();
+
+    tbody.innerHTML = '';
+
+    if (data.pedidos.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6">No hay pedidos aun.</td></tr>';
+      return;
+    }
+
+    data.pedidos.forEach(pedido => {
+      const fecha = new Date(pedido.createdAt).toLocaleString();
+      const cliente = pedido.usuario && pedido.usuario.nombre ? pedido.usuario.nombre : 'N/A';
+      const productos = pedido.productos
+        .map(item => `${item.producto ? item.producto.nombre : 'N/A'} x${item.cantidad}`)
+        .join(', ');
+
+      const fila = document.createElement('tr');
+      fila.innerHTML = `
+        <td>${fecha}</td>
+        <td>${cliente}</td>
+        <td>${productos}</td>
+        <td>$${pedido.total.toLocaleString()}</td>
+        <td>
+          <span class="badge-estado badge-${pedido.estado}">${pedido.estado}</span>
+        </td>
+        <td>
+          <select class="estado-select" onchange="cambiarEstadoPedido('${pedido._id}', this.value, this)">
+            <option value="pendiente" ${pedido.estado === 'pendiente' ? 'selected' : ''}>Pendiente</option>
+            <option value="pagado" ${pedido.estado === 'pagado' ? 'selected' : ''}>Pagado</option>
+            <option value="enviado" ${pedido.estado === 'enviado' ? 'selected' : ''}>Enviado</option>
+            <option value="entregado" ${pedido.estado === 'entregado' ? 'selected' : ''}>Entregado</option>
+            <option value="cancelado" ${pedido.estado === 'cancelado' ? 'selected' : ''}>Cancelado</option>
+          </select>
+        </td>
+      `;
+      tbody.appendChild(fila);
+    });
+
+  } catch (error) {
+    tbody.innerHTML = '<tr><td colspan="6">Error al cargar pedidos.</td></tr>';
+  }
+}
+
+async function cambiarEstadoPedido(id, nuevoEstado, select) {
+  try {
+    const res = await fetch(`${API_URL}/superadmin/pedidos/${id}/estado`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ estado: nuevoEstado })
+    });
+
+    if (!res.ok) {
+      alert('Error al cambiar el estado');
+      return;
+    }
+
+    // Actualizar el badge de estado visualmente
+    const badge = select.closest('tr').querySelector('.badge-estado');
+    badge.className = `badge-estado badge-${nuevoEstado}`;
+    badge.textContent = nuevoEstado;
+
+    alert(`Estado actualizado a: ${nuevoEstado}`);
+
+  } catch (error) {
+    alert('Error de conexion');
+  }
+}
+
+// Cargar lista de usuarios
+async function cargarUsuarios() {
+  const tbody = document.getElementById('lista-usuarios');
+  if (!tbody) return;
+
+  try {
+    const res = await fetch(`${API_URL}/superadmin/usuarios`);
+    const usuarios = await res.json();
+
+    tbody.innerHTML = '';
+
+    if (usuarios.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4">No hay usuarios registrados.</td></tr>';
+      return;
+    }
+
+    usuarios.forEach(usuario => {
+      const fecha = new Date(usuario.createdAt).toLocaleDateString();
+      const fila = document.createElement('tr');
+      fila.innerHTML = `
+        <td>${usuario.nombre}</td>
+        <td>${usuario.email}</td>
+        <td><span class="badge-estado badge-${usuario.rol === 'admin' ? 'pagado' : 'pendiente'}">${usuario.rol}</span></td>
+        <td>${fecha}</td>
+      `;
+      tbody.appendChild(fila);
+    });
+
+  } catch (error) {
+    tbody.innerHTML = '<tr><td colspan="4">Error al cargar usuarios.</td></tr>';
   }
 }

@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const Pedido = require('../models/Pedido');
 
-// GET /api/reportes/ventas?desde=2026-01-01&hasta=2026-12-31
 router.get('/ventas', async (req, res) => {
   try {
     const { desde, hasta } = req.query;
@@ -18,12 +17,13 @@ router.get('/ventas', async (req, res) => {
       }
     }
 
-    const pedidos = await Pedido.find(filtro).populate('productos.producto');
+    const pedidos = await Pedido.find(filtro)
+      .populate({ path: 'usuario', model: 'Usuario', select: 'nombre email' })
+      .populate({ path: 'productos.producto', model: 'Producto', select: 'nombre precio' });
 
     const totalRecaudado = pedidos.reduce((sum, p) => sum + p.total, 0);
     const numeroVentas = pedidos.length;
 
-    // Contar productos mas vendidos
     const conteoProductos = {};
     pedidos.forEach(pedido => {
       pedido.productos.forEach(item => {

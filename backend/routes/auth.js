@@ -70,5 +70,19 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ mensaje: error.message });
   }
 });
-
+// Ruta temporal para asignar superadmin - BORRA ESTO DESPUÉS
+  router.post('/hacer-superadmin', async (req, res) => {
+  try {
+    const { email } = req.body;
+    const usuario = await Usuario.findOneAndUpdate(
+      { email },
+      { rol: 'superadmin' },
+      { new: true }
+    );
+    if (!usuario) return res.status(404).json({ mensaje: 'Usuario no encontrado' });
+    res.json({ mensaje: `${usuario.nombre} ahora es superadmin`, usuario });
+  } catch (error) {
+    res.status(500).json({ mensaje: error.message });
+  }
+});
 module.exports = router;
