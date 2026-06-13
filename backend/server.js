@@ -17,6 +17,9 @@ mongoose.connect(process.env.MONGO_URI)
 const productosRoutes = require('./routes/productos');
 app.use('/api/productos', productosRoutes);
 
+const authRoutes = require('./routes/auth');
+app.use('/api/auth', authRoutes);
+
 app.get('/', (req, res) => {
   res.send('¡El servidor está funcionando!');
 });
