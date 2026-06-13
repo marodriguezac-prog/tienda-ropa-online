@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reporte de Ventas</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Mi Tienda de Ropa - Reportes</h1>
+    <nav>
+      <span id="usuario-info"></span>
+      <a href="admin.html">Panel Admin</a>
+      <a href="index.html">Ver tienda</a>
+      <a href="#" id="link-logout" style="display:none;">Cerrar sesion</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Reporte de Ventas</h2>
+
+    <div class="filtros-reporte">
+      <label>Desde: <input type="date" id="fecha-desde"></label>
+      <label>Hasta: <input type="date" id="fecha-hasta"></label>
+      <button onclick="generarReporte()">Generar Reporte</button>
+    </div>
+
+    <div id="resumen-reporte" class="resumen-reporte"></div>
+
+    <h3 style="margin-top:30px; color:#FFD700;">Productos mas vendidos</h3>
+    <table class="factura-tabla" id="tabla-productos-vendidos">
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Cantidad vendida</th>
+          <th>Total generado</th>
+        </tr>
+      </thead>
+      <tbody id="productos-vendidos-body"></tbody>
+    </table>
+  </main>
+
+  <script src="app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', generarReporte);
+  </script>
+</body>
+</html>

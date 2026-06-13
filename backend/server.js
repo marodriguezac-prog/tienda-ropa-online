@@ -21,7 +21,10 @@ const authRoutes = require('./routes/auth');
 app.use('/api/auth', authRoutes);
 
 const pedidosRoutes = require('./routes/pedidos');
-app.use('/api/pedidos', pedidosRoutes);
+app.use('/api/pedidos', pedidosRoutes); 
+
+const reportesRoutes = require('./routes/reportes');
+app.use('/api/reportes', reportesRoutes);
 
 app.get('/', (req, res) => {
   res.send('¡El servidor está funcionando!');

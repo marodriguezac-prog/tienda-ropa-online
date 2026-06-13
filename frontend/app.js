@@ -1,5 +1,7 @@
 const API_URL = 'http://localhost:3000/api';
 
+let todosLosProductos = []; // guarda el catalogo completo para filtrar
+
 // Cargar catalogo
 async function cargarCatalogo() {
   const contenedor = document.getElementById('catalogo');
@@ -9,36 +11,74 @@ async function cargarCatalogo() {
     const res = await fetch(`${API_URL}/productos`);
     const productos = await res.json();
 
-    contenedor.innerHTML = '';
+    todosLosProductos = productos;
+    renderizarCatalogo(productos);
 
-    productos.forEach(producto => {
-      const card = document.createElement('div');
-      card.className = 'producto-card';
-
-      const tallasOptions = producto.tallas.map(t => `<option value="${t}">${t}</option>`).join('');
-      const coloresOptions = producto.colores.map(c => `<option value="${c}">${c}</option>`).join('');
-
-      card.innerHTML = `
-        <img src="${producto.imagen}" alt="${producto.nombre}">
-        <div class="info">
-          <h3>${producto.nombre}</h3>
-          <p>${producto.descripcion || ''}</p>
-          <div class="precio">$${producto.precio.toLocaleString()}</div>
-          <div class="stock">Stock disponible: ${producto.stock}</div>
-          <select class="select-talla">${tallasOptions}</select>
-          <select class="select-color">${coloresOptions}</select>
-          <button onclick="agregarAlCarrito('${producto._id}', '${producto.nombre}', ${producto.precio}, this)">
-            Agregar al carrito
-          </button>
-        </div>
-      `;
-
-      contenedor.appendChild(card);
-    });
   } catch (error) {
     contenedor.innerHTML = '<p>Error al cargar el catalogo. Verifica que el servidor este corriendo.</p>';
     console.error(error);
   }
+}
+
+// Dibuja las tarjetas de productos
+function renderizarCatalogo(productos) {
+  const contenedor = document.getElementById('catalogo');
+  contenedor.innerHTML = '';
+
+  if (productos.length === 0) {
+    contenedor.innerHTML = '<p>No se encontraron productos.</p>';
+    return;
+  }
+
+  const STOCK_MINIMO = 5; // umbral para alerta de stock bajo
+
+  productos.forEach(producto => {
+    const card = document.createElement('div');
+    card.className = 'producto-card';
+
+    const tallasOptions = producto.tallas.map(t => `<option value="${t}">${t}</option>`).join('');
+    const coloresOptions = producto.colores.map(c => `<option value="${c}">${c}</option>`).join('');
+
+    const stockBajo = producto.stock <= STOCK_MINIMO;
+    const claseStock = stockBajo ? 'stock-bajo' : '';
+    const badgeStock = stockBajo ? `<span class="badge-stock-bajo">Stock bajo</span>` : '';
+
+    card.innerHTML = `
+      <img src="${producto.imagen}" alt="${producto.nombre}">
+      <div class="info">
+        <h3>${producto.nombre}</h3>
+        <p>${producto.descripcion || ''}</p>
+        <div class="precio">$${producto.precio.toLocaleString()}</div>
+        <div class="stock ${claseStock}">Stock disponible: ${producto.stock} ${badgeStock}</div>
+        <select class="select-talla">${tallasOptions}</select>
+        <select class="select-color">${coloresOptions}</select>
+        <button onclick="agregarAlCarrito('${producto._id}', '${producto.nombre}', ${producto.precio}, this)">
+          Agregar al carrito
+        </button>
+      </div>
+    `;
+
+    contenedor.appendChild(card);
+  });
+}
+
+// Filtra el catalogo segun lo escrito en el buscador
+function filtrarCatalogo() {
+  const texto = document.getElementById('buscador').value.toLowerCase().trim();
+
+  if (!texto) {
+    renderizarCatalogo(todosLosProductos);
+    return;
+  }
+
+  const filtrados = todosLosProductos.filter(p => {
+    const nombreCoincide = p.nombre.toLowerCase().includes(texto);
+    const tallaCoincide = (p.tallas || []).some(t => t.toLowerCase().includes(texto));
+    const colorCoincide = (p.colores || []).some(c => c.toLowerCase().includes(texto));
+    return nombreCoincide || tallaCoincide || colorCoincide;
+  });
+
+  renderizarCatalogo(filtrados);
 }
 
 // Agregar producto al carrito (guardado en localStorage)
@@ -105,6 +145,11 @@ document.addEventListener('DOMContentLoaded', () => {
   cargarCatalogo();
   actualizarContadorCarrito();
   actualizarMenuUsuario();
+
+  const buscador = document.getElementById('buscador');
+  if (buscador) {
+    buscador.addEventListener('input', filtrarCatalogo);
+  }
 }); // ─── LOGIN ──────────────────────────────────────────
 async function iniciarSesion() {
   const email = document.getElementById('email').value;
@@ -255,15 +300,21 @@ async function confirmarCompra() {
       return;
     }
 
-    alert('¡Compra realizada con exito!');
+    const facturaData = {
+      items: carrito,
+      total: data.total,
+      fecha: data.createdAt,
+      pedidoId: data._id
+    };
+    localStorage.setItem('ultimaFactura', JSON.stringify(facturaData));
+
     localStorage.removeItem('carrito');
-    window.location.href = 'index.html';
+    window.location.href = 'factura.html';
 
   } catch (error) {
     alert('Error de conexion con el servidor');
   }
-}
-
+} 
 // Actualizar el evento DOMContentLoaded existente
 document.addEventListener('DOMContentLoaded', () => {
   mostrarCarrito();
@@ -360,4 +411,90 @@ async function eliminarProducto(id) {
 // Cargar lista admin al iniciar (si existe el contenedor)
 document.addEventListener('DOMContentLoaded', () => {
   cargarListaAdmin();
-});
+}); // ─── FACTURA ────────────────────────────────────────
+function cargarFactura() {
+  const datos = JSON.parse(localStorage.getItem('ultimaFactura'));
+  const contenedorDatos = document.getElementById('factura-datos');
+  const contenedorItems = document.getElementById('factura-items');
+  const contenedorTotal = document.getElementById('factura-total');
+
+  if (!datos) {
+    contenedorDatos.innerHTML = '<p>No hay informacion de factura disponible.</p>';
+    return;
+  }
+
+  const usuario = JSON.parse(localStorage.getItem('usuario'));
+  const fecha = new Date(datos.fecha).toLocaleString();
+
+  contenedorDatos.innerHTML = `
+    <p><strong>Numero de pedido:</strong> ${datos.pedidoId}</p>
+    <p><strong>Cliente:</strong> ${usuario ? usuario.nombre : 'N/A'}</p>
+    <p><strong>Fecha:</strong> ${fecha}</p>
+  `;
+
+  contenedorItems.innerHTML = '';
+  datos.items.forEach(item => {
+    const subtotal = item.precio * item.cantidad;
+    const fila = document.createElement('tr');
+    fila.innerHTML = `
+      <td>${item.nombre}</td>
+      <td>${item.talla}</td>
+      <td>${item.color}</td>
+      <td>${item.cantidad}</td>
+      <td>$${item.precio.toLocaleString()}</td>
+      <td>$${subtotal.toLocaleString()}</td>
+    `;
+    contenedorItems.appendChild(fila);
+  });
+
+  contenedorTotal.textContent = `Total: $${datos.total.toLocaleString()}`;
+}  // ─── REPORTES ───────────────────────────────────────
+async function generarReporte() {
+  const resumen = document.getElementById('resumen-reporte');
+  const tbody = document.getElementById('productos-vendidos-body');
+  if (!resumen) return;
+
+  const desde = document.getElementById('fecha-desde').value;
+  const hasta = document.getElementById('fecha-hasta').value;
+
+  let url = `${API_URL}/reportes/ventas`;
+  const params = [];
+  if (desde) params.push(`desde=${desde}`);
+  if (hasta) params.push(`hasta=${hasta}`);
+  if (params.length > 0) url += `?${params.join('&')}`;
+
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+
+    resumen.innerHTML = `
+      <div class="resumen-card">
+        <h4>Total Recaudado</h4>
+        <div class="valor">$${data.totalRecaudado.toLocaleString()}</div>
+      </div>
+      <div class="resumen-card">
+        <h4>Numero de Ventas</h4>
+        <div class="valor">${data.numeroVentas}</div>
+      </div>
+    `;
+
+    tbody.innerHTML = '';
+    if (data.productosMasVendidos.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="3">No hay ventas en este periodo.</td></tr>';
+    } else {
+      data.productosMasVendidos.forEach(p => {
+        const fila = document.createElement('tr');
+        fila.innerHTML = `
+          <td>${p.nombre}</td>
+          <td>${p.cantidad}</td>
+          <td>$${p.totalVendido.toLocaleString()}</td>
+        `;
+        tbody.appendChild(fila);
+      });
+    }
+
+  } catch (error) {
+    resumen.innerHTML = '<p>Error al cargar el reporte.</p>';
+    console.error(error);
+  }
+}
