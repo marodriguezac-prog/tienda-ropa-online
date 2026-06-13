@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Administracion</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Mi Tienda de Ropa - Admin</h1>
+    <nav>
+      <span id="usuario-info"></span>
+      <a href="index.html">Ver tienda</a>
+      <a href="#" id="link-logout" style="display:none;">Cerrar sesion</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Agregar Producto</h2>
+    <div id="mensaje"></div>
+
+    <div class="form-container" style="max-width: 600px;">
+      <input type="text" id="nombre" placeholder="Nombre del producto" required>
+      <input type="text" id="descripcion" placeholder="Descripcion">
+      <input type="number" id="precio" placeholder="Precio" required>
+      <input type="text" id="categoria" placeholder="Categoria (ej: Camisas, Pantalones)">
+      <input type="text" id="tallas" placeholder="Tallas separadas por coma (ej: S,M,L,XL)">
+      <input type="text" id="colores" placeholder="Colores separados por coma (ej: Rojo,Azul,Negro)">
+      <input type="number" id="stock" placeholder="Stock disponible" required>
+      <input type="text" id="imagen" placeholder="URL de la imagen">
+      <button onclick="agregarProducto()">Agregar Producto</button>
+    </div>
+
+    <h2 style="margin-top:40px;">Productos Existentes</h2>
+    <div id="lista-admin"></div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

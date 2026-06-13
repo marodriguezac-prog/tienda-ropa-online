@@ -267,4 +267,97 @@ async function confirmarCompra() {
 // Actualizar el evento DOMContentLoaded existente
 document.addEventListener('DOMContentLoaded', () => {
   mostrarCarrito();
+});// ─── ADMIN: Agregar producto ──────────────────────────
+async function agregarProducto() {
+  const mensaje = document.getElementById('mensaje');
+
+  const nombre = document.getElementById('nombre').value;
+  const descripcion = document.getElementById('descripcion').value;
+  const precio = Number(document.getElementById('precio').value);
+  const categoria = document.getElementById('categoria').value;
+  const tallas = document.getElementById('tallas').value.split(',').map(t => t.trim()).filter(Boolean);
+  const colores = document.getElementById('colores').value.split(',').map(c => c.trim()).filter(Boolean);
+  const stock = Number(document.getElementById('stock').value);
+  const imagen = document.getElementById('imagen').value;
+
+  if (!nombre || !precio || stock === undefined) {
+    mensaje.innerHTML = `<p class="mensaje-error">Nombre, precio y stock son obligatorios</p>`;
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/productos`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombre, descripcion, precio, categoria, tallas, colores, stock, imagen })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      mensaje.innerHTML = `<p class="mensaje-error">${data.mensaje}</p>`;
+      return;
+    }
+
+    mensaje.innerHTML = `<p class="mensaje-exito">Producto agregado exitosamente</p>`;
+
+    // Limpiar formulario
+    document.getElementById('nombre').value = '';
+    document.getElementById('descripcion').value = '';
+    document.getElementById('precio').value = '';
+    document.getElementById('categoria').value = '';
+    document.getElementById('tallas').value = '';
+    document.getElementById('colores').value = '';
+    document.getElementById('stock').value = '';
+    document.getElementById('imagen').value = '';
+
+    cargarListaAdmin();
+
+  } catch (error) {
+    mensaje.innerHTML = `<p class="mensaje-error">Error de conexion con el servidor</p>`;
+  }
+}
+
+// ─── ADMIN: Listar y eliminar productos ──────────────
+async function cargarListaAdmin() {
+  const contenedor = document.getElementById('lista-admin');
+  if (!contenedor) return;
+
+  try {
+    const res = await fetch(`${API_URL}/productos`);
+    const productos = await res.json();
+
+    contenedor.innerHTML = '';
+
+    productos.forEach(producto => {
+      const div = document.createElement('div');
+      div.className = 'carrito-item';
+      div.innerHTML = `
+        <div>
+          <strong>${producto.nombre}</strong> - $${producto.precio.toLocaleString()} - Stock: ${producto.stock}
+        </div>
+        <button class="btn-eliminar" onclick="eliminarProducto('${producto._id}')">Eliminar</button>
+      `;
+      contenedor.appendChild(div);
+    });
+
+  } catch (error) {
+    contenedor.innerHTML = '<p>Error al cargar productos</p>';
+  }
+}
+
+async function eliminarProducto(id) {
+  if (!confirm('Seguro que deseas eliminar este producto?')) return;
+
+  try {
+    await fetch(`${API_URL}/productos/${id}`, { method: 'DELETE' });
+    cargarListaAdmin();
+  } catch (error) {
+    alert('Error al eliminar el producto');
+  }
+}
+
+// Cargar lista admin al iniciar (si existe el contenedor)
+document.addEventListener('DOMContentLoaded', () => {
+  cargarListaAdmin();
 });
