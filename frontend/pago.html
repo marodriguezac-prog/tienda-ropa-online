@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Metodo de Pago</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .metodos-pago {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+      margin: 20px 0;
+    }
+
+    .metodo-card {
+      background: #1a1a1a;
+      border: 2px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .metodo-card:hover {
+      border-color: #FFD700;
+    }
+
+    .metodo-card.seleccionado {
+      border-color: #FFD700;
+      background-color: #2a2400;
+    }
+
+    .metodo-card .icono {
+      font-size: 36px;
+      margin-bottom: 10px;
+    }
+
+    .metodo-card h3 {
+      color: #FFD700;
+      font-size: 16px;
+      margin-bottom: 5px;
+    }
+
+    .metodo-card p {
+      color: #aaa;
+      font-size: 12px;
+    }
+
+    .resumen-pago {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .resumen-pago h3 {
+      color: #FFD700;
+      margin-bottom: 15px;
+    }
+
+    .resumen-pago .item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #2a2a2a;
+      font-size: 14px;
+      color: #ccc;
+    }
+
+    .resumen-pago .total-final {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      font-size: 20px;
+      color: #FFD700;
+      font-weight: bold;
+    }
+
+    .info-pago {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      display: none;
+    }
+
+    .info-pago.visible {
+      display: block;
+    }
+
+    .info-pago h4 {
+      color: #FFD700;
+      margin-bottom: 10px;
+    }
+
+    .info-pago p {
+      color: #ccc;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .info-pago input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #333;
+      border-radius: 4px;
+      background-color: #0d0d0d;
+      color: #f0f0f0;
+    }
+
+    .btn-pagar {
+      width: 100%;
+      padding: 14px;
+      background-color: #FFD700;
+      color: #0d0d0d;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: bold;
+      margin-top: 10px;
+      transition: background-color 0.2s;
+    }
+
+    .btn-pagar:hover {
+      background-color: #e6c200;
+    }
+
+    .btn-pagar:disabled {
+      background-color: #555;
+      color: #999;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Mi Tienda de Ropa</h1>
+    <nav>
+      <span id="usuario-info"></span>
+      <a href="carrito.html">Volver al carrito</a>
+      <a href="index.html">Catalogo</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Metodo de Pago</h2>
+
+    <div class="resumen-pago">
+      <h3>Resumen de tu pedido</h3>
+      <div id="resumen-items"></div>
+      <div class="total-final">
+        <span>Total a pagar:</span>
+        <span id="total-pago">$0</span>
+      </div>
+    </div>
+
+    <h3 style="color:#FFD700; margin-bottom:15px;">Elige tu metodo de pago</h3>
+
+    <div class="metodos-pago">
+      <div class="metodo-card" onclick="seleccionarMetodo('tarjeta', this)">
+        <div class="icono">💳</div>
+        <h3>Tarjeta</h3>
+        <p>Credito o debito</p>
+      </div>
+      <div class="metodo-card" onclick="seleccionarMetodo('nequi', this)">
+        <div class="icono">📱</div>
+        <h3>Nequi</h3>
+        <p>Pago movil</p>
+      </div>
+      <div class="metodo-card" onclick="seleccionarMetodo('efecty', this)">
+        <div class="icono">🏪</div>
+        <h3>Efecty</h3>
+        <p>Pago en efectivo</p>
+      </div>
+      <div class="metodo-card" onclick="seleccionarMetodo('daviplata', this)">
+        <div class="icono">📲</div>
+        <h3>Daviplata</h3>
+        <p>Billetera digital</p>
+      </div>
+      <div class="metodo-card" onclick="seleccionarMetodo('contraentrega', this)">
+        <div class="icono">🚚</div>
+        <h3>Contraentrega</h3>
+        <p>Paga al recibir</p>
+      </div>
+      <div class="metodo-card" onclick="seleccionarMetodo('pse', this)">
+        <div class="icono">🏦</div>
+        <h3>PSE</h3>
+        <p>Transferencia bancaria</p>
+      </div>
+    </div>
+
+    <!-- Info segun metodo seleccionado -->
+    <div class="info-pago" id="info-tarjeta">
+      <h4>💳 Datos de tu tarjeta</h4>
+      <input type="text" placeholder="Nombre en la tarjeta" maxlength="50">
+      <input type="text" placeholder="Numero de tarjeta (1234 5678 9012 3456)" maxlength="19">
+      <input type="text" placeholder="Fecha de vencimiento (MM/AA)" maxlength="5">
+      <input type="text" placeholder="CVV (3 digitos)" maxlength="3">
+    </div>
+
+    <div class="info-pago" id="info-nequi">
+      <h4>📱 Pago con Nequi</h4>
+      <p>Transfiere al numero: <strong style="color:#FFD700;">310 123 4567</strong></p>
+      <p>Concepto: Tu nombre + numero de pedido</p>
+      <input type="text" placeholder="Numero de celular Nequi desde donde pagas">
+    </div>
+
+    <div class="info-pago" id="info-efecty">
+      <h4>🏪 Pago en Efecty</h4>
+      <p>Codigo de pago: <strong style="color:#FFD700;">TDA-2026-ROPA</strong></p>
+      <p>Acercate a cualquier punto Efecty con este codigo y el valor exacto.</p>
+      <input type="text" placeholder="Numero de cedula para confirmar">
+    </div>
+
+    <div class="info-pago" id="info-daviplata">
+      <h4>📲 Pago con Daviplata</h4>
+      <p>Transfiere al numero: <strong style="color:#FFD700;">310 123 4567</strong></p>
+      <p>Concepto: Compra tienda de ropa</p>
+      <input type="text" placeholder="Numero de celular Daviplata desde donde pagas">
+    </div>
+
+    <div class="info-pago" id="info-contraentrega">
+      <h4>🚚 Pago Contraentrega</h4>
+      <p>Pagaras en efectivo cuando recibas tu pedido.</p>
+      <p>Ten listo el valor exacto: <strong style="color:#FFD700;" id="valor-contraentrega"></strong></p>
+      <input type="text" placeholder="Direccion de entrega">
+    </div>
+
+    <div class="info-pago" id="info-pse">
+      <h4>🏦 Transferencia PSE</h4>
+      <p>Banco destino: <strong style="color:#FFD700;">Bancolombia</strong></p>
+      <p>Cuenta corriente: <strong style="color:#FFD700;">123-456789-00</strong></p>
+      <p>NIT: <strong style="color:#FFD700;">900.123.456-7</strong></p>
+      <input type="text" placeholder="Numero de comprobante de transferencia">
+    </div>
+
+    <button class="btn-pagar" id="btn-pagar" onclick="procesarPago()" disabled>
+      Selecciona un metodo de pago
+    </button>
+  </main>
+
+  <script src="app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', cargarResumenPago);
+  </script>
+</body>
+</html>

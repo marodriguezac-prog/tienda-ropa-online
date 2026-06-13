@@ -140,8 +140,22 @@ function actualizarMenuUsuario() {
   }
 }
 
-// Inicializar al cargar cualquier pagina
-document.addEventListener('DOMContentLoaded', () => {
+// Inicializar al cargar cualquier pagina  
+  function irAPago() {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert('Debes iniciar sesion para continuar');
+    window.location.href = 'login.html';
+    return;
+  }
+  const carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+  if (carrito.length === 0) {
+    alert('El carrito esta vacio');
+    return;
+  }
+  window.location.href = 'pago.html';
+} 
+  document.addEventListener('DOMContentLoaded', () => {
   cargarCatalogo();
   actualizarContadorCarrito();
   actualizarMenuUsuario();
@@ -641,4 +655,137 @@ async function cargarUsuarios() {
   } catch (error) {
     tbody.innerHTML = '<tr><td colspan="4">Error al cargar usuarios.</td></tr>';
   }
+}   // ─── PAGO ───────────────────────────────────────────
+let metodoPagoSeleccionado = null;
+
+function cargarResumenPago() {
+  const contenedor = document.getElementById('resumen-items');
+  const totalEl = document.getElementById('total-pago');
+  const valorContra = document.getElementById('valor-contraentrega');
+  if (!contenedor) return;
+
+  const carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+
+  if (carrito.length === 0) {
+    window.location.href = 'carrito.html';
+    return;
+  }
+
+  let total = 0;
+  contenedor.innerHTML = '';
+
+  carrito.forEach(item => {
+    const subtotal = item.precio * item.cantidad;
+    total += subtotal;
+    const div = document.createElement('div');
+    div.className = 'item';
+    div.innerHTML = `
+      <span>${item.nombre} (${item.talla} / ${item.color}) x${item.cantidad}</span>
+      <span>$${subtotal.toLocaleString()}</span>
+    `;
+    contenedor.appendChild(div);
+  });
+
+  if (totalEl) totalEl.textContent = `$${total.toLocaleString()}`;
+  if (valorContra) valorContra.textContent = `$${total.toLocaleString()}`;
+}
+
+function seleccionarMetodo(metodo, card) {
+  document.querySelectorAll('.metodo-card').forEach(c => c.classList.remove('seleccionado'));
+  card.classList.add('seleccionado');
+
+  document.querySelectorAll('.info-pago').forEach(i => i.classList.remove('visible'));
+  const infoDiv = document.getElementById(`info-${metodo}`);
+  if (infoDiv) infoDiv.classList.add('visible');
+
+  metodoPagoSeleccionado = metodo;
+
+  const btnPagar = document.getElementById('btn-pagar');
+  if (btnPagar) {
+    btnPagar.disabled = false;
+    btnPagar.textContent = `Pagar con ${metodo.charAt(0).toUpperCase() + metodo.slice(1)}`;
+  }
+}
+
+async function procesarPago() {
+  if (!metodoPagoSeleccionado) {
+    alert('Por favor selecciona un metodo de pago');
+    return;
+  }
+
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert('Debes iniciar sesion para completar la compra');
+    window.location.href = 'login.html';
+    return;
+  }
+
+  const carrito = JSON.parse(localStorage.getItem('carrito')) || [];
+  if (carrito.length === 0) {
+    alert('El carrito esta vacio');
+    return;
+  }
+
+  const btnPagar = document.getElementById('btn-pagar');
+  btnPagar.disabled = true;
+  btnPagar.textContent = 'Procesando pago...';
+
+  const productos = carrito.map(item => ({
+    producto: item.producto,
+    cantidad: item.cantidad,
+    talla: item.talla,
+    color: item.color
+  }));
+
+  try {
+    const res = await fetch(`${API_URL}/pedidos`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ productos })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(`Error: ${data.mensaje}`);
+      btnPagar.disabled = false;
+      btnPagar.textContent = `Pagar con ${metodoPagoSeleccionado}`;
+      return;
+    }
+
+    // Guardar datos de factura y confirmacion
+    const facturaData = {
+      items: carrito,
+      total: data.total,
+      fecha: data.createdAt,
+      pedidoId: data._id,
+      metodoPago: metodoPagoSeleccionado
+    };
+    localStorage.setItem('ultimaFactura', JSON.stringify(facturaData));
+    localStorage.removeItem('carrito');
+
+    window.location.href = 'confirmacion.html';
+
+  } catch (error) {
+    alert('Error de conexion con el servidor');
+    btnPagar.disabled = false;
+    btnPagar.textContent = `Pagar con ${metodoPagoSeleccionado}`;
+  }
+}
+
+// ─── CONFIRMACION ────────────────────────────────────
+function cargarConfirmacion() {
+  const datos = JSON.parse(localStorage.getItem('ultimaFactura'));
+  if (!datos) return;
+
+  const metodoEl = document.getElementById('metodo-usado');
+  const totalEl = document.getElementById('total-confirmacion');
+  const pedidoEl = document.getElementById('pedido-id');
+
+  if (metodoEl) metodoEl.textContent = datos.metodoPago || 'N/A';
+  if (totalEl) totalEl.textContent = `$${datos.total ? datos.total.toLocaleString() : 0}`;
+  if (pedidoEl) pedidoEl.textContent = datos.pedidoId || 'N/A';
 }

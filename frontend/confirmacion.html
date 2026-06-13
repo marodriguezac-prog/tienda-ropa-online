@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compra Exitosa</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .confirmacion-container {
+      max-width: 600px;
+      margin: 60px auto;
+      background: #1a1a1a;
+      padding: 40px;
+      border-radius: 10px;
+      border: 2px solid #FFD700;
+      text-align: center;
+    }
+
+    .icono-exito {
+      font-size: 72px;
+      margin-bottom: 20px;
+    }
+
+    .confirmacion-container h2 {
+      color: #FFD700;
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    .confirmacion-container p {
+      color: #ccc;
+      font-size: 16px;
+      margin-bottom: 10px;
+      line-height: 1.6;
+    }
+
+    .detalle-entrega {
+      background: #0d0d0d;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .detalle-entrega p {
+      margin-bottom: 8px;
+      font-size: 15px;
+    }
+
+    .detalle-entrega strong {
+      color: #FFD700;
+    }
+
+    .btn-volver {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 30px;
+      background-color: #FFD700;
+      color: #0d0d0d;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      text-decoration: none;
+      margin-right: 10px;
+    }
+
+    .btn-factura {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 30px;
+      background-color: #1a1a1a;
+      color: #FFD700;
+      border: 2px solid #FFD700;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Mi Tienda de Ropa</h1>
+    <nav>
+      <a href="index.html">Catalogo</a>
+    </nav>
+  </header>
+
+  <div class="confirmacion-container">
+    <div class="icono-exito">🎉</div>
+    <h2>¡Compra Exitosa!</h2>
+    <p>Gracias por tu compra. Tu pedido ha sido registrado correctamente.</p>
+
+    <div class="detalle-entrega">
+      <p>📦 <strong>Estado del pedido:</strong> Pendiente de envio</p>
+      <p>🚚 <strong>Tiempo de entrega estimado:</strong> 15 dias habiles</p>
+      <p>💳 <strong>Metodo de pago:</strong> <span id="metodo-usado">N/A</span></p>
+      <p>💰 <strong>Total pagado:</strong> <span id="total-confirmacion">$0</span></p>
+      <p>📋 <strong>Numero de pedido:</strong> <span id="pedido-id">N/A</span></p>
+    </div>
+
+    <p>Recibirás tu pedido en los proximos <strong style="color:#FFD700;">15 dias habiles</strong>. Te notificaremos cuando sea enviado.</p>
+
+    <a href="factura.html" class="btn-factura">Ver Factura</a>
+    <a href="index.html" class="btn-volver">Seguir comprando</a>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', cargarConfirmacion);
+  </script>
+</body>
+</html>
