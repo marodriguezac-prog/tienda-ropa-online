@@ -1,4 +1,4 @@
-const API_URL = 'https://tienda-ropa-online.onrender.com/api';
+const API_URL = 'https://tienda-ropa-online.onrender.com/api'; 
 
 let todosLosProductos = []; // guarda el catalogo completo para filtrar
 
